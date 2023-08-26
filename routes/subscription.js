@@ -7,12 +7,12 @@ const subscription = require('../middleware/Validator/SubscriberValidator')
 router.get('/:subscriber_id', subscription.get(), SubscriberController.get)
 router.post('/register', subscription.create(), SubscriberController.create)
 router.patch(
-  '/profile/:subscriber_id',
+  '/profile/',
   subscription.update(),
   SubscriberController.updateProfile
 )
 router.patch(
-  '/address/:subscriber_id',
+  '/address/',
   subscription.update(),
   SubscriberController.updateAddress
 )

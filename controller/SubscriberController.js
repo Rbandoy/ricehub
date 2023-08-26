@@ -5,6 +5,7 @@ const {
   SubscriberModel,
   ProfileModel,
   AddressModel,
+  TransactionModel,
   sequelize,
 } = require('../init/mysql-init')
 const regcodeWrapper = require('../api-helpers/lib/regcode-generator-wrapper')
@@ -13,7 +14,7 @@ const SubscriberController = {}
 
 SubscriberController.get = async (req, res) => {
   logger.info('Entering - get subscriber')
-  const subscriberId = req.params.subscriber_id
+  const subscriberId = req.query.subscriber_id
   const full = req.query.full
 
   try {
@@ -31,17 +32,23 @@ SubscriberController.get = async (req, res) => {
       raw: true,
     })
 
+    const address = await AddressModel.findOne({
+      where: { subscriber: subscriberId },
+      attributes: { exclude: ['subscriber', 'id'] },
+      raw: true,
+    })
+
     let response
 
     if (!full) {
-      response = { subscriber, profile }
+      response = { subscriber, profile, address }
     } else {
-      const address = await AddressModel.findOne({
-        where: { subscriber: subscriberId },
-        attributes: { exclude: ['subscriber', 'id'] },
+      const transactions = await TransactionModel.findAll({
+        where: { subscriber: subscriberId, status: 1 },
         raw: true,
       })
-      response = { subscriber, profile, address }
+
+      response = { subscriber, profile, address, transactions }
     }
 
     res.send(
@@ -175,7 +182,7 @@ SubscriberController.create = async (req, res) => {
 
 SubscriberController.updateProfile = async (req, res) => {
   const updateData = req.body.profile
-  const id = req.params.subscriber_id
+  const id = req.query.subscriber_id
   logger.info('Entering - update subscriber - profile')
   const transaction = await sequelize.transaction()
 
@@ -222,14 +229,12 @@ SubscriberController.updateProfile = async (req, res) => {
         })
       )
     )
-
-    
   }
 }
 
 SubscriberController.updateAddress = async (req, res) => {
   const updateData = req.body.address
-  const id = req.params.subscriber_id
+  const id = req.query.subscriber_id
   logger.info('Entering - update subscriber - address')
   const transaction = await sequelize.transaction()
 

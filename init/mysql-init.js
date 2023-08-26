@@ -1,8 +1,9 @@
 require('dotenv').config()
 const Sequelize = require('sequelize')
-const SubscriberModel = require('../models/sample-mysql-model/subscriber-model')
-const ProfileModel = require('../models/sample-mysql-model/profile-model')
-const AddressModel = require('../models/sample-mysql-model/address-model')
+const SubscriberModel = require('../models/subscriber-model/subscriber-model')
+const ProfileModel = require('../models/subscriber-model/profile-model')
+const AddressModel = require('../models/subscriber-model/address-model')
+const TransactionModel = require('../models/transaction-model/transaction-model')
 const logger = require('../api-helpers/logger/logger')
 const DEFAULT_TIMEZONE = '+08:00'
 
@@ -30,6 +31,7 @@ const models = {
   SubscriberModel: SubscriberModel.init(sequelize, Sequelize),
   ProfileModel: ProfileModel.init(sequelize, Sequelize),
   AddressModel: AddressModel.init(sequelize, Sequelize),
+  TransactionModel: TransactionModel.init(sequelize, Sequelize),
 }
 
 /** Create relationship in ORM */

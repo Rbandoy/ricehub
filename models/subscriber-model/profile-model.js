@@ -17,7 +17,7 @@ class ProfileModel extends Sequelize.Model {
         modelName: 'subsprofile',
         tableName: 'subsprofile',
         sequelize,
-        timestamps: false,
+        timestamps: true,
       }
     )
   }

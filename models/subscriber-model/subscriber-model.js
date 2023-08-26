@@ -16,7 +16,7 @@ class SubscriberModel extends Sequelize.Model {
         modelName: 'subscriber',
         tableName: 'subscriber',
         sequelize,
-        timestamps: false,
+        timestamps: true,
       }
     )
   }

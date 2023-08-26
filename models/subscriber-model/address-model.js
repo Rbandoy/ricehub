@@ -20,7 +20,7 @@ class AddressModel extends Sequelize.Model {
         modelName: 'subsaddress',
         tableName: 'subsaddress',
         sequelize,
-        timestamps: false,
+        timestamps: true,
       }
     )
   }

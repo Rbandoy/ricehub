@@ -1,26 +1,26 @@
-const { param, body } = require('express-validator');
-const validationWrapper = require('./validation-wrapper');
+const { param, body, query } = require('express-validator')
+const validationWrapper = require('../../api-helpers/lib/validation-wrapper')
 
-const subscription = {};
+const subscription = {}
 
 subscription.get = () => {
   return validationWrapper([
-    param('id')
+    query('subscriber_id')
       .exists()
       .trim()
       .notEmpty()
       .withMessage('Subscriber Id Required'),
-  ]);
-};
+  ])
+}
 subscription.create = () => {
   return validationWrapper([
     body('password')
-      .exists()
+      .optional()
       .trim()
       .notEmpty()
       .withMessage('Password field required!'),
     body('username')
-      .exists()
+      .optional()
       .trim()
       .notEmpty()
       .withMessage('username field required!'),
@@ -103,17 +103,17 @@ subscription.create = () => {
       .trim()
       .notEmpty()
       .withMessage('street1 field required!'),
-  ]);
-};
+  ])
+}
 
 subscription.update = () => {
   return validationWrapper([
-    param('id')
+    query('subscriber_id')
       .exists()
       .trim()
       .notEmpty()
       .withMessage('Subscriber Id Required'),
-  ]);
-};
+  ])
+}
 
-module.exports = subscription;
+module.exports = subscription

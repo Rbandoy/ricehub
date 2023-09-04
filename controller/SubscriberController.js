@@ -13,8 +13,10 @@ const regcodeWrapper = require('../api-helpers/lib/regcode-generator-wrapper')
 const SubscriberController = {}
 
 SubscriberController.get = async (req, res) => {
+ 
   logger.info('Entering - get subscriber')
-  const subscriberId = req.query.subscriber_id
+  const subscriberId = req.params.subscriber_id
+  console.log(subscriberId)
   const full = req.query.full
 
   try {
@@ -66,7 +68,39 @@ SubscriberController.get = async (req, res) => {
       dataToSnakeCase(
         apiResponse({
           isSuccess: false,
-          statusCode: 402,
+          statusCode: 200,
+          message: error.message,
+          errors: 'failed',
+        })
+      )
+    )
+  }
+}
+
+SubscriberController.fetchAll = async (req, res) => {
+  logger.info('Entering - fetch all subscriber')
+
+  try {
+    const profile = await ProfileModel.findAll({
+      raw: true,
+    })
+
+    res.send(
+      dataToSnakeCase(
+        apiResponse({
+          statusCode: 200,
+          message: 'sucessful',
+          data: profile,
+        })
+      )
+    )
+  } catch (error) {
+    logger.info(`Error on - get subscriber - ${error.message}`)
+    res.send(
+      dataToSnakeCase(
+        apiResponse({
+          isSuccess: false,
+          statusCode: 200,
           message: error.message,
           errors: 'failed',
         })
@@ -171,7 +205,7 @@ SubscriberController.create = async (req, res) => {
       dataToSnakeCase(
         apiResponse({
           isSuccess: false,
-          statusCode: 402,
+          statusCode: 200,
           message: error.message,
           errors: 'failed',
         })
@@ -223,7 +257,7 @@ SubscriberController.updateProfile = async (req, res) => {
       dataToSnakeCase(
         apiResponse({
           isSuccess: false,
-          statusCode: 402,
+          statusCode: 200,
           message: error.message,
           errors: 'failed',
         })
@@ -275,7 +309,7 @@ SubscriberController.updateAddress = async (req, res) => {
       dataToSnakeCase(
         apiResponse({
           isSuccess: false,
-          statusCode: 402,
+          statusCode: 200,
           message: error.message,
           errors: 'failed',
         })

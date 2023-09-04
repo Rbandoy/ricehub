@@ -1,11 +1,11 @@
-const { body, query } = require('express-validator')
+const { body, query, param } = require('express-validator')
 const validationWrapper = require('../../api-helpers/lib/validation-wrapper')
 
 const subscription = {}
 
 subscription.get = () => {
   return validationWrapper([
-    query('subscriber_id')
+    param('subscriber_id')
       .exists()
       .trim()
       .notEmpty()

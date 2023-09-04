@@ -5,6 +5,7 @@ const SubscriberController = require('../controller/SubscriberController')
 const subscription = require('../middleware/Validator/SubscriberValidator')
 
 router.get('/:subscriber_id', subscription.get(), SubscriberController.get)
+router.get('/', SubscriberController.fetchAll)
 router.post('/register', subscription.create(), SubscriberController.create)
 router.patch(
   '/profile/',

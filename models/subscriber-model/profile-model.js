@@ -4,7 +4,7 @@ class ProfileModel extends Sequelize.Model {
   static init(sequelize, DataTypes) {
     return super.init(
       {
-        subscriber: DataTypes.STRING(255),
+        accountId: DataTypes.STRING(255),
         first_name: DataTypes.STRING(45),
         last_name: DataTypes.STRING(45),
         middle_name: DataTypes.STRING(45),

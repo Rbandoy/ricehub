@@ -1,108 +1,43 @@
-const { body, query, param } = require('express-validator')
+const { body, query } = require('express-validator')
 const validationWrapper = require('../../api-helpers/lib/validation-wrapper')
 
 const subscription = {}
 
 subscription.get = () => {
   return validationWrapper([
-    param('subscriber_id')
+    query('subscriber_id')
       .exists()
       .trim()
       .notEmpty()
       .withMessage('Subscriber Id Required'),
   ])
 }
-subscription.create = () => {
+subscription.register = () => {
   return validationWrapper([
     body('password')
-      .optional()
+      .exists()
       .trim()
       .notEmpty()
-      .withMessage('Password field required!'),
+      .withMessage('Password field required!')
+      .bail(),
     body('username')
-      .optional()
-      .trim()
-      .notEmpty()
-      .withMessage('username field required!'),
-    body('profile.first_name')
       .exists()
       .trim()
       .notEmpty()
-      .withMessage('first_name field required!'),
-    body('profile.last_name')
-      .exists()
-      .trim()
-      .notEmpty()
-      .withMessage('last_name field required!'),
-    body('profile.middle_name').optional(),
-    body('profile.birth_date')
-      .exists()
-      .trim()
-      .notEmpty()
-      .withMessage('birth_date field required!'),
+      .withMessage('username field required!')
+      .bail(),
     body('profile.email')
       .exists()
       .trim()
       .notEmpty()
-      .withMessage('email field required!'),
+      .withMessage('email field required!')
+      .bail(),
     body('profile.phone_number')
       .exists()
       .trim()
       .notEmpty()
-      .withMessage('phone_number field required!'),
-    body('profile.gender')
-      .isIn(['Male', 'Female'])
-      .withMessage('Invalid Gender'),
-    body('address.municipality')
-      .exists()
-      .trim()
-      .notEmpty()
-      .withMessage('address municipality field required!'),
-    body('address.city')
-      .exists()
-      .trim()
-      .notEmpty()
-      .withMessage('address city field required!'),
-    body('address.province')
-      .exists()
-      .trim()
-      .notEmpty()
-      .withMessage('address province field required!'),
-    body('address.postal_code')
-      .exists()
-      .trim()
-      .notEmpty()
-      .withMessage('address postal_code field required!'),
-    body('address.street')
-      .exists()
-      .trim()
-      .notEmpty()
-      .withMessage('street field required!'),
-    body('address.municipality1')
-      .exists()
-      .trim()
-      .notEmpty()
-      .withMessage('address municipality1 field required!'),
-    body('address.city1')
-      .exists()
-      .trim()
-      .notEmpty()
-      .withMessage('city1 field required!'),
-    body('address.province1')
-      .exists()
-      .trim()
-      .notEmpty()
-      .withMessage('province1 field required!'),
-    body('address.postal_code1')
-      .exists()
-      .trim()
-      .notEmpty()
-      .withMessage('postal_code1 field required!'),
-    body('address.street1')
-      .exists()
-      .trim()
-      .notEmpty()
-      .withMessage('street1 field required!'),
+      .withMessage('phone_number field required!')
+      .bail(),
   ])
 }
 
@@ -112,7 +47,8 @@ subscription.update = () => {
       .exists()
       .trim()
       .notEmpty()
-      .withMessage('Subscriber Id Required'),
+      .withMessage('Subscriber Id Required')
+      .bail(),
   ])
 }
 

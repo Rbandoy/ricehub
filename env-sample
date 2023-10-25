@@ -1,0 +1,14 @@
+PORT=8000
+ENVI=development
+ 
+DB_NAME=rice-hub
+DB_USER=root
+DB_PASSWORD=
+DB_HOST=localhost
+DB_PORT=3306
+
+#MONGODB collection
+SUBSCOLLECTION=subscriber
+PROFILECOLLECTION=subscriber-profile
+ADDRESSCOLLECTION=subscriber-address
+

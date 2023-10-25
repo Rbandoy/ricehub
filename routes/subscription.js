@@ -1,12 +1,19 @@
 const express = require('express')
 const router = express.Router()
-
+const auth = require('../controller/authentication/auth')
 const SubscriberController = require('../controller/SubscriberController')
 const subscription = require('../middleware/Validator/SubscriberValidator')
 
-router.get('/:subscriber_id', subscription.get(), SubscriberController.get)
-router.get('/', SubscriberController.fetchAll)
-router.post('/register', subscription.create(), SubscriberController.create)
+// GET
+router.get('/', auth.verify, subscription.get(), SubscriberController.get)
+router.get('/getAll', SubscriberController.fetchAll)
+router.get('/getCart', SubscriberController.getCart)
+router.put('/updateCartItem', SubscriberController.updateCartItem)
+
+// POST
+router.post('/register', subscription.register(), SubscriberController.register)
+
+// UPDATE
 router.patch(
   '/profile/',
   subscription.update(),

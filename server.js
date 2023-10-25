@@ -6,10 +6,12 @@ const { apiResponse } = require('./api-helpers/v1/message/ResponseController')
 const app = express()
 const routes = require('./routes/index')
 const rTracer = require('cls-rtracer')
+const cors = require('cors')
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(express.json())
+app.use(cors())
 app.use(express.urlencoded({ extended: true }))
 app.use(
   rTracer.expressMiddleware({
@@ -39,6 +41,6 @@ app.use((err, req, res, next) => {
     .json(apiResponse({ isSuccess: false, errors: 'Internal Server Error' }))
 })
 
-app.listen(process.env.PORT, () => {
-  logger.info(`server running on port :${process.env.PORT}`)
+app.listen(process.env.PORT, process.env.IP, () => {
+  logger.info(`server running on ${process.env.IP}:${process.env.PORT}`)
 })

@@ -5,7 +5,7 @@ const {
   SubscriberModel,
   ProfileModel,
   AddressModel,
-  TransactionModel,
+  LookupModel,
   sequelize,
 } = require('../init/mysql-init')
 const regcodeWrapper = require('../api-helpers/lib/regcode-generator-wrapper')
@@ -13,9 +13,8 @@ const regcodeWrapper = require('../api-helpers/lib/regcode-generator-wrapper')
 const SubscriberController = {}
 
 SubscriberController.get = async (req, res) => {
- 
   logger.info('Entering - get subscriber')
-  const subscriberId = req.params.subscriber_id
+  const subscriberId = req.query.subscriber_id
   console.log(subscriberId)
   const full = req.query.full
 
@@ -29,13 +28,13 @@ SubscriberController.get = async (req, res) => {
     if (!subscriber) throw new Error('Subscriber not found!')
 
     const profile = await ProfileModel.findOne({
-      where: { subscriber: subscriberId },
+      where: { accountId: subscriberId },
       attributes: { exclude: ['subscriber', 'id'] },
       raw: true,
     })
 
     const address = await AddressModel.findOne({
-      where: { subscriber: subscriberId },
+      where: { accountId: subscriberId },
       attributes: { exclude: ['subscriber', 'id'] },
       raw: true,
     })
@@ -43,14 +42,9 @@ SubscriberController.get = async (req, res) => {
     let response
 
     if (!full) {
-      response = { subscriber, profile, address }
+      response = { subscriber, profile }
     } else {
-      const transactions = await TransactionModel.findAll({
-        where: { subscriber: subscriberId, status: 1 },
-        raw: true,
-      })
-
-      response = { subscriber, profile, address, transactions }
+      response = { subscriber, profile, address }
     }
 
     res.send(
@@ -109,7 +103,7 @@ SubscriberController.fetchAll = async (req, res) => {
   }
 }
 
-SubscriberController.create = async (req, res) => {
+SubscriberController.register = async (req, res) => {
   const { password, username } = req.body
   logger.info('Entering - create subscriber')
   const {
@@ -122,22 +116,16 @@ SubscriberController.create = async (req, res) => {
     phone_number,
   } = req.body.profile
 
-  const {
-    municipality,
-    city,
-    province,
-    postal_code,
-    street,
-    municipality1,
-    city1,
-    province1,
-    postal_code1,
-    street1,
-  } = req.body.address
-
   const transaction = await sequelize.transaction()
 
   try {
+    const isUsernameExists = await SubscriberModel.findOne({
+      where: { username: username },
+      raw: true,
+    })
+
+    if (isUsernameExists) throw new Error('Please try different username!')
+
     const isEmailExists = await ProfileModel.findOne({
       where: { email: email },
       raw: true,
@@ -162,7 +150,7 @@ SubscriberController.create = async (req, res) => {
     })
 
     const profileDocument = new ProfileModel({
-      subscriber: subscriberId,
+      accountId: subscriberId,
       first_name,
       last_name,
       middle_name,
@@ -173,22 +161,22 @@ SubscriberController.create = async (req, res) => {
     })
 
     const addressDocument = new AddressModel({
-      subscriber: subscriberId,
-      municipality,
-      city,
-      province,
-      postal_code,
-      street,
-      municipality1,
-      city1,
-      province1,
-      postal_code1,
-      street1,
+      accountId: subscriberId,
+    })
+
+    const lookup = new LookupModel({
+      accountId: subscriberId,
+      username,
+      email,
+      phone_number,
+      role: 2,
+      access: 'post,put,patch,get,delete',
     })
 
     await subscriberDocument.save({ transaction }),
       await profileDocument.save({ transaction }),
       await addressDocument.save({ transaction }),
+      await lookup.save({ transaction }),
       await transaction.commit()
 
     res.send(
@@ -232,7 +220,7 @@ SubscriberController.updateProfile = async (req, res) => {
     const updatedDocument = await ProfileModel.update(
       updateData,
       {
-        where: { subscriber: id },
+        where: { accountId: id },
         raw: true,
       },
       { transaction }
@@ -284,7 +272,7 @@ SubscriberController.updateAddress = async (req, res) => {
     const updatedDocument = await AddressModel.update(
       updateData,
       {
-        where: { subscriber: id },
+        where: { accountId: id },
         raw: true,
       },
       { transaction }
@@ -315,6 +303,108 @@ SubscriberController.updateAddress = async (req, res) => {
         })
       )
     )
+  }
+}
+
+SubscriberController.getCart = async (req, res) => {
+  logger.info('Entering - get cart items')
+  console.log(req)
+  try {
+    // const productInfo = await ProductModel.findAll({
+    //   where: { status: 'Available' },
+    //   raw: true,
+    // })
+
+    const product = [
+      {
+        productId: '2',
+        variety: 'Basmati Rice',
+        name: 'rice 22',
+        totalSale: 1000,
+        stock: 500,
+        price: 2000,
+        weight: '50',
+        unit: 'kg',
+        origin: 'India',
+        quantity: 1,
+        featuredImage:
+          'https://www.holidify.com/images/cmsuploads/compressed/Bangalore_citycover_20190613234056.jpg',
+        details: 'dasdqwdasd vc cxvz xcvasdf asvzxcva sdfasdf',
+      },
+      {
+        productId: '12',
+        variety: 'Bassmati Rice',
+        name: 'rice as1',
+        totalSale: 1000,
+        stock: 500,
+        price: 2000,
+        weight: '50',
+        unit: 'kg',
+        origin: 'India',
+        quantity: 3,
+        featuredImage:
+          'https://www.holidify.com/images/cmsuploads/compressed/Bangalore_citycover_20190613234056.jpg',
+        details: 'dasdqwdasd vc cxvz xcvasdf asvzxcva sdfasdf',
+      },
+    ]
+
+    logger.info('End - get cart')
+    res.send(
+      dataToSnakeCase(apiResponse({ message: 'success', data: product }))
+    )
+  } catch (error) {
+    res.send(dataToSnakeCase(apiResponse({ message: error.message })))
+  }
+}
+
+SubscriberController.updateCartItem = async (req, res) => {
+  logger.info('Entering - update cart items')
+  console.log(req.body)
+  try {
+    // const productInfo = await ProductModel.findAll({
+    //   where: { status: 'Available' },
+    //   raw: true,
+    // })
+
+    const product = [
+      {
+        productId: '2',
+        variety: 'Basmati Rice',
+        name: 'rice 22',
+        totalSale: 1000,
+        stock: 500,
+        price: 2000,
+        weight: '50',
+        unit: 'kg',
+        origin: 'India',
+        quantity: 1,
+        featuredImage:
+          'https://www.holidify.com/images/cmsuploads/compressed/Bangalore_citycover_20190613234056.jpg',
+        details: 'dasdqwdasd vc cxvz xcvasdf asvzxcva sdfasdf',
+      },
+      {
+        productId: '12',
+        variety: 'Bassmati Rice',
+        name: 'rice as1',
+        totalSale: 1000,
+        stock: 500,
+        price: 2000,
+        weight: '50',
+        unit: 'kg',
+        origin: 'India',
+        quantity: 3,
+        featuredImage:
+          'https://www.holidify.com/images/cmsuploads/compressed/Bangalore_citycover_20190613234056.jpg',
+        details: 'dasdqwdasd vc cxvz xcvasdf asvzxcva sdfasdf',
+      },
+    ]
+
+    logger.info('End - update cart')
+    res.send(
+      dataToSnakeCase(apiResponse({ message: 'success', data: product }))
+    )
+  } catch (error) {
+    res.send(dataToSnakeCase(apiResponse({ message: error.message })))
   }
 }
 

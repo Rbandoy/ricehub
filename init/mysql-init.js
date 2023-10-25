@@ -4,6 +4,9 @@ const SubscriberModel = require('../models/subscriber-model/subscriber-model')
 const ProfileModel = require('../models/subscriber-model/profile-model')
 const AddressModel = require('../models/subscriber-model/address-model')
 const TransactionModel = require('../models/transaction-model/transaction-model')
+const AuthModel = require('../models/auth-model/auth-model')
+const LookupModel = require('../models/lookup')
+const ProductModel = require('../models/merchant-model/product-model')
 const logger = require('../api-helpers/logger/logger')
 const DEFAULT_TIMEZONE = '+08:00'
 
@@ -32,6 +35,9 @@ const models = {
   ProfileModel: ProfileModel.init(sequelize, Sequelize),
   AddressModel: AddressModel.init(sequelize, Sequelize),
   TransactionModel: TransactionModel.init(sequelize, Sequelize),
+  AuthModel: AuthModel.init(sequelize, Sequelize),
+  LookupModel: LookupModel.init(sequelize, Sequelize),
+  ProductModel: ProductModel.init(sequelize, Sequelize),
 }
 
 /** Create relationship in ORM */

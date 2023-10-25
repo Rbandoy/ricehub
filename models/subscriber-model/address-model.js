@@ -4,7 +4,7 @@ class AddressModel extends Sequelize.Model {
   static init(sequelize, DataTypes) {
     return super.init(
       {
-        subscriber: DataTypes.STRING(255),
+        accountId: DataTypes.STRING(255),
         municipality: DataTypes.STRING(255),
         city: DataTypes.STRING(255),
         province: DataTypes.STRING(255),

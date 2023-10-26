@@ -18,8 +18,8 @@ function decode(token) {
 }
 
 auth.login = async (req, res) => {
-  const { username, password } = req.body
-
+  const { username, password, deviceId } = req.body
+  console.log(req.body)
   try {
     const lookup = await LookupModel.findOne({
       where: { username: username },
@@ -38,7 +38,7 @@ auth.login = async (req, res) => {
     if (!subscriber) throw new Error('Invalid Credentials!')
 
     const token = jwt.sign(
-      { userId: subscriber.Id, username: username },
+      { userId: subscriber.Id, username: username, deviceId },
       secretKey,
       { expiresIn: '30s' }
     )

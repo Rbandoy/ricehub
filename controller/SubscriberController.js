@@ -6,9 +6,13 @@ const {
   ProfileModel,
   AddressModel,
   LookupModel,
+  CartModel,
+  ProductModel,
   sequelize,
 } = require('../init/mysql-init')
 const regcodeWrapper = require('../api-helpers/lib/regcode-generator-wrapper')
+const CustomError = require('../lib/customError')
+const { response } = require('express')
 
 const SubscriberController = {}
 
@@ -306,104 +310,107 @@ SubscriberController.updateAddress = async (req, res) => {
   }
 }
 
+SubscriberController.addCart = async (req, res) => {
+  logger.info('Entering - add cart items')
+  const {
+    accountId,
+    productId
+  } = req.body
+  const transaction = await sequelize.transaction()
+  try {
+
+
+    const productItem = await ProductModel.findAll({
+      where: { status: 'AVAILABLE' },
+      raw: true,
+    })
+
+    const cartDocuments = new CartModel({
+      accountId: 1,
+      productId: 12,
+      price: productDetails.price,
+      quantity: 2,
+      isForOrder: false,
+      status: "PENDING",
+      name: "dinorado",
+      weight: 25,
+      unit: "kg",
+      featuredImage: "",
+    })
+
+    await cartDocuments.save({ transaction })
+   await transaction.commit()
+    logger.info('End - add cart')
+    res.send(
+      dataToSnakeCase(apiResponse({ message: 'success', data: cartDocuments }))
+    )
+  } catch (error) {
+    transaction.rollback()
+    res.send(dataToSnakeCase(apiResponse({ message: error.message })))
+  }
+}
+
 SubscriberController.getCart = async (req, res) => {
   logger.info('Entering - get cart items')
-  console.log(req)
+  // console.log(req)
   try {
-    // const productInfo = await ProductModel.findAll({
-    //   where: { status: 'Available' },
-    //   raw: true,
-    // })
+    const cartItems = await CartModel.findAll({
+      where: { status: 'PENDING' },
+      raw: true,
+    })
 
-    const product = [
-      {
-        productId: '2',
-        variety: 'Basmati Rice',
-        name: 'rice 22',
-        totalSale: 1000,
-        stock: 500,
-        price: 2000,
-        weight: '50',
-        unit: 'kg',
-        origin: 'India',
-        quantity: 1,
-        featuredImage:
-          'https://www.holidify.com/images/cmsuploads/compressed/Bangalore_citycover_20190613234056.jpg',
-        details: 'dasdqwdasd vc cxvz xcvasdf asvzxcva sdfasdf',
-      },
-      {
-        productId: '12',
-        variety: 'Bassmati Rice',
-        name: 'rice as1',
-        totalSale: 1000,
-        stock: 500,
-        price: 2000,
-        weight: '50',
-        unit: 'kg',
-        origin: 'India',
-        quantity: 3,
-        featuredImage:
-          'https://www.holidify.com/images/cmsuploads/compressed/Bangalore_citycover_20190613234056.jpg',
-        details: 'dasdqwdasd vc cxvz xcvasdf asvzxcva sdfasdf',
-      },
-    ]
+    if (!cartItems.length) {
+      throw new CustomError('Cart Empty', 200)
+    }
 
     logger.info('End - get cart')
     res.send(
-      dataToSnakeCase(apiResponse({ message: 'success', data: product }))
+      dataToSnakeCase(apiResponse({ message: 'success', data: cartItems }))
     )
   } catch (error) {
     res.send(dataToSnakeCase(apiResponse({ message: error.message })))
   }
 }
 
-SubscriberController.updateCartItem = async (req, res) => {
+SubscriberController.updateCartItemQuantity = async (req, res) => {
   logger.info('Entering - update cart items')
   console.log(req.body)
   try {
-    // const productInfo = await ProductModel.findAll({
-    //   where: { status: 'Available' },
-    //   raw: true,
-    // })
-
-    const product = [
-      {
-        productId: '2',
-        variety: 'Basmati Rice',
-        name: 'rice 22',
-        totalSale: 1000,
-        stock: 500,
-        price: 2000,
-        weight: '50',
-        unit: 'kg',
-        origin: 'India',
-        quantity: 1,
-        featuredImage:
-          'https://www.holidify.com/images/cmsuploads/compressed/Bangalore_citycover_20190613234056.jpg',
-        details: 'dasdqwdasd vc cxvz xcvasdf asvzxcva sdfasdf',
-      },
-      {
-        productId: '12',
-        variety: 'Bassmati Rice',
-        name: 'rice as1',
-        totalSale: 1000,
-        stock: 500,
-        price: 2000,
-        weight: '50',
-        unit: 'kg',
-        origin: 'India',
-        quantity: 3,
-        featuredImage:
-          'https://www.holidify.com/images/cmsuploads/compressed/Bangalore_citycover_20190613234056.jpg',
-        details: 'dasdqwdasd vc cxvz xcvasdf asvzxcva sdfasdf',
-      },
-    ]
-
+    const cartItem = await CartModel.findByPk(req.body.id)
+    await cartItem.increment('quantity', { by: req.body.quantity })
     logger.info('End - update cart')
+    const cartItems = await CartModel.findAll({
+      where: { status: 'PENDING' },
+      raw: true,
+    })
+
     res.send(
-      dataToSnakeCase(apiResponse({ message: 'success', data: product }))
+      dataToSnakeCase(apiResponse({ message: 'success', data: cartItems }))
     )
   } catch (error) {
+    console.log(error)
+    res.send(dataToSnakeCase(apiResponse({ message: error.message })))
+  }
+}
+
+SubscriberController.updateCartIsForOrder = async (req, res) => {
+  logger.info('Entering - update cart isForOrder')
+  console.log(req.body)
+  try {
+    const cartItem = await CartModel.findByPk(req.body.id)
+    cartItem.isForOrder = req.body.isForOrder
+    await cartItem.save()
+    logger.info('End - update cart isForOrder')
+    const cartItems = await CartModel.findAll({
+      where: { status: 'PENDING' },
+      raw: true,
+    })
+
+    res.send(
+      dataToSnakeCase(apiResponse({ message: 'success', data: cartItems }))
+    )
+  } catch (error) {
+    console.log(error)
     res.send(dataToSnakeCase(apiResponse({ message: error.message })))
   }
 }

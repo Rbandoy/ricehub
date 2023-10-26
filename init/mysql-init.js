@@ -8,6 +8,7 @@ const AuthModel = require('../models/auth-model/auth-model')
 const LookupModel = require('../models/lookup')
 const ProductModel = require('../models/merchant-model/product-model')
 const logger = require('../api-helpers/logger/logger')
+const CartModel = require('../models/subscriber-model/cart-model')
 const DEFAULT_TIMEZONE = '+08:00'
 
 const sequelize = new Sequelize(
@@ -38,6 +39,7 @@ const models = {
   AuthModel: AuthModel.init(sequelize, Sequelize),
   LookupModel: LookupModel.init(sequelize, Sequelize),
   ProductModel: ProductModel.init(sequelize, Sequelize),
+  CartModel: CartModel.init(sequelize, Sequelize),
 }
 
 /** Create relationship in ORM */

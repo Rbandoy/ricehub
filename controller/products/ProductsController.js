@@ -12,47 +12,45 @@ ProductController.getActiveProducts = async (req, res) => {
   logger.info('Entering - get active product')
 
   try {
-    // const productInfo = await ProductModel.findAll({
-    //   where: { status: 'Available' },
-    //   raw: true,
-    // })
+    const productInfo = await ProductModel.findAll({
+      where: { status: 'Available' },
+      raw: true,
+    })
 
-    const product = [
-      {
-        productId: '2',
-        variety: 'Basmati Rice',
-        name: 'rice 22',
-        totalSale: 1000,
-        stock: 500,
-        price: 2000,
-        weight: '50',
-        unit: 'kg',
-        origin: 'India',
-        quantity: 1,
-        featuredImage:
-          'https://www.holidify.com/images/cmsuploads/compressed/Bangalore_citycover_20190613234056.jpg',
-        details: 'dasdqwdasd vc cxvz xcvasdf asvzxcva sdfasdf',
-      },
-      {
-        productId: '1',
-        variety: 'Basmati Rice',
-        name: 'rice',
-        totalSale: 1000,
-        stock: 500,
-        price: 2000,
-        weight: '50',
-        unit: 'kg',
-        origin: 'India',
-        quantity: 1,
-        featuredImage:
-          'https://www.holidify.com/images/cmsuploads/compressed/Bangalore_citycover_20190613234056.jpg',
-        details: 'dasdqwdasd vc cxvz xcvasdf asvzxcva sdfasdf',
-      },
-    ]
+    const topSelling = await ProductModel.findAll({
+      where: { status: 'Available' },
+      order: [['totalSale', 'DESC']],
+      limit: 5,
+      raw: true,
+    })
+
+    const varieties = await ProductModel.findAll({
+      where: { status: 'Available' },
+      attributes: [
+        sequelize.fn('DISTINCT', sequelize.col('variety')),
+        'variety',
+        'varietyFeaturedImage',
+      ],
+      raw: true,
+    })
+
+    const popular = await ProductModel.findAll({
+      where: { status: 'Available' },
+      order: [['totalSale', 'DESC']],
+      limit: 1,
+      raw: true,
+    })
+ 
+    const productData = {
+      productInfo,
+      topSelling,
+      popular,
+      varieties,
+    }
 
     logger.info('End - get active product')
     res.send(
-      dataToSnakeCase(apiResponse({ message: 'success', data: product }))
+      dataToSnakeCase(apiResponse({ message: 'success', data: productData }))
     )
   } catch (error) {
     res.send(dataToSnakeCase(apiResponse({ message: error.message })))

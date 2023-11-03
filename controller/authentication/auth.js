@@ -66,7 +66,7 @@ auth.login = async (req, res) => {
     res.send(
       dataToSnakeCase(
         apiResponse({
-          isSuccess: false,
+          isSuccess: true,
           statusCode: 200,
           data: {
             accessToken: {

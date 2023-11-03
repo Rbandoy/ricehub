@@ -184,11 +184,13 @@ SubscriberController.register = async (req, res) => {
       await transaction.commit()
 
     res.send(
+      dataToSnakeCase(
       apiResponse({
         statusCode: 200,
         message: 'subscriber sucessfully created!',
         data: { subscriberDocument, profileDocument, addressDocument },
       })
+      )
     )
   } catch (error) {
     await transaction.rollback()

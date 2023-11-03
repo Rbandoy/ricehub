@@ -312,14 +312,9 @@ SubscriberController.updateAddress = async (req, res) => {
 
 SubscriberController.addCart = async (req, res) => {
   logger.info('Entering - add cart items')
-  const {
-    accountId,
-    productId
-  } = req.body
+  const { accountId, productId } = req.body
   const transaction = await sequelize.transaction()
   try {
-
-
     const productItem = await ProductModel.findAll({
       where: { status: 'AVAILABLE' },
       raw: true,
@@ -331,15 +326,15 @@ SubscriberController.addCart = async (req, res) => {
       price: productDetails.price,
       quantity: 2,
       isForOrder: false,
-      status: "PENDING",
-      name: "dinorado",
+      status: 'PENDING',
+      name: 'dinorado',
       weight: 25,
-      unit: "kg",
-      featuredImage: "",
+      unit: 'kg',
+      featuredImage: '',
     })
 
     await cartDocuments.save({ transaction })
-   await transaction.commit()
+    await transaction.commit()
     logger.info('End - add cart')
     res.send(
       dataToSnakeCase(apiResponse({ message: 'success', data: cartDocuments }))

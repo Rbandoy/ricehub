@@ -40,7 +40,7 @@ ProductController.getActiveProducts = async (req, res) => {
       limit: 1,
       raw: true,
     })
- 
+
     const productData = {
       productInfo,
       topSelling,

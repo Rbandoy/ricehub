@@ -185,11 +185,11 @@ SubscriberController.register = async (req, res) => {
 
     res.send(
       dataToSnakeCase(
-      apiResponse({
-        statusCode: 200,
-        message: 'subscriber sucessfully created!',
-        data: { subscriberDocument, profileDocument, addressDocument },
-      })
+        apiResponse({
+          statusCode: 200,
+          message: 'subscriber sucessfully created!',
+          data: { subscriberDocument, profileDocument, addressDocument },
+        })
       )
     )
   } catch (error) {

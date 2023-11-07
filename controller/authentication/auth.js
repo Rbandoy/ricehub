@@ -9,7 +9,9 @@ const {
   SubscriberModel,
   AuthModel,
   LookupModel,
+  ProfileModel,
   sequelize,
+  AddressModel,
 } = require('../../init/mysql-init')
 const auth = {}
 
@@ -36,29 +38,39 @@ auth.login = async (req, res) => {
     })
 
     if (!subscriber) throw new Error('Invalid Credentials!')
-
     const token = jwt.sign(
-      { userId: subscriber.Id, username: username, deviceId },
+      { userId: subscriber.id, username: username, deviceId },
       secretKey,
-      { expiresIn: '30s' }
+      { expiresIn: '1h' }
     )
-
-    const refreshToken = jwt.sign({ token: token }, secretKey, {
-      expiresIn: '1h',
+  
+    const profile = await ProfileModel.findOne({
+      where: { accountId: subscriber.id },
+      raw: true,
     })
 
-    const decodedToken = await decode(token)
-    const decodedRefreshToken = await decode(refreshToken)
+    
+    const address = await AddressModel.findOne({
+      where: { accountId: subscriber.id },
+      raw: true,
+    })
+
+    // const refreshToken = jwt.sign({ token: token }, secretKey, {
+    //   expiresIn: '1h',
+    // })
+
+    const decodedToken = decode(token)
+    // const decodedRefreshToken = decode(refreshToken)
 
     const accessToken = [
       {
         token: token,
         type: 'token',
       },
-      {
-        token: refreshToken,
-        type: 'refreshToken',
-      },
+      // {
+      //   token: refreshToken,
+      //   type: 'refreshToken',
+      // },
     ]
 
     AuthModel.bulkCreate(accessToken)
@@ -72,13 +84,16 @@ auth.login = async (req, res) => {
             accessToken: {
               token,
               iat: decodedToken.iat,
-              exp: decodedToken.exp,
+              exp: new Date(decodedToken.exp * 1000).getTime(),
             },
-            RefreshToken: {
-              token: refreshToken,
-              iat: decodedRefreshToken.iat,
-              exp: decodedRefreshToken.exp,
-            },
+            // RefreshToken: {
+            //   token: refreshToken,
+            //   iat: decodedRefreshToken.iat,
+            //   exp: decodedRefreshToken.exp,
+            // },
+            subscriber,
+            profile,
+            address,
             ...lookup,
           },
           message: 'Successfully login',

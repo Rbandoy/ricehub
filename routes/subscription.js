@@ -9,12 +9,16 @@ router.get('/', auth.verify, subscription.get(), SubscriberController.get)
 router.get('/getAll', auth.verify, SubscriberController.fetchAll)
 router.get('/getCart', auth.verify, SubscriberController.getCart)
 router.put(
-  '/updateCartItemQuantity', 
+  '/updateCartItemQuantity',
   auth.verify,
   SubscriberController.updateCartItemQuantity
 )
 
-router.put('/updateCartIsForOrder', auth.verify, SubscriberController.updateCartIsForOrder)
+router.put(
+  '/updateCartIsForOrder',
+  auth.verify,
+  SubscriberController.updateCartIsForOrder
+)
 
 // POST
 router.post('/register', subscription.register(), SubscriberController.register)

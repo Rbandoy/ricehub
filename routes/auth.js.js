@@ -11,5 +11,6 @@ router.post(
 )
 
 router.post('/login', authentication.login)
+router.delete('/delete', authentication.delete)
 
 module.exports = router

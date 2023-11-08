@@ -443,7 +443,7 @@ SubscriberController.getCart = async (req, res) => {
 SubscriberController.updateCartItemQuantity = async (req, res) => {
   logger.info('Entering - update cart items')
   const id = req.query.subscriber_id
-  
+
   try {
     const cartItem = await CartModel.findByPk(req.body.id)
     await cartItem.increment('quantity', { by: req.body.quantity })

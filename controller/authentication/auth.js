@@ -121,6 +121,53 @@ auth.login = async (req, res) => {
   }
 }
 
+auth.delete = async (req, res) => {
+  const { username, password } = req.query
+  try {
+    const subscriber = await SubscriberModel.findOne({
+      where: { username: username, password: password },
+      attributes: { exclude: ['password'] },
+      raw: true,
+    })
+
+    if (!subscriber) throw new Error('Invalid Credentials!')
+
+    await SubscriberModel.destroy({
+      where: { username: username, password: password },
+    })
+
+    await ProfileModel.destroy({
+      where: { accountId: subscriber.id },
+    })
+
+    await AddressModel.destroy({
+      where: { accountId: subscriber.id },
+    })
+
+    res.send(
+      dataToSnakeCase(
+        apiResponse({
+          isSuccess: true,
+          statusCode: 200,
+          data: {},
+          message: 'Successfully Account Deleted',
+        })
+      )
+    )
+  } catch (error) {
+    res.send(
+      dataToSnakeCase(
+        apiResponse({
+          isSuccess: false,
+          statusCode: 403,
+          message: error.message,
+          errors: 'failed',
+        })
+      )
+    )
+  }
+}
+
 auth.verify = async (req, res, next) => {
   try {
     const accessToken = req.headers['authorization']

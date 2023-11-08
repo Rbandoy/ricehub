@@ -10,5 +10,4 @@ router.get('/products', MerchantController.getProducts)
 router.post('/postProduct', MerchantController.postProduct)
 
 // UPDATE
-
 module.exports = router

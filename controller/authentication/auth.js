@@ -12,7 +12,7 @@ const {
   ProfileModel,
   sequelize,
   AddressModel,
-  FieldsModel
+  FieldsModel,
 } = require('../../init/mysql-init')
 const auth = {}
 
@@ -47,10 +47,11 @@ auth.login = async (req, res) => {
 
     const profile = await ProfileModel.findOne({
       where: { accountId: subscriber.id },
-      attributes: { exclude: ['id', 'updatedAt', 'createdAt', 'email', 'phone_number'] },
+      attributes: {
+        exclude: ['id', 'updatedAt', 'createdAt'],
+      },
       raw: true,
     })
-
 
     const address = await AddressModel.findOne({
       where: { accountId: subscriber.id },
@@ -75,7 +76,7 @@ auth.login = async (req, res) => {
       //   type: 'refreshToken',
       // },
     ]
-    const fields = await FieldsModel.findAll({raw: true});
+    const fields = await FieldsModel.findAll({ raw: true })
 
     AuthModel.bulkCreate(accessToken)
 

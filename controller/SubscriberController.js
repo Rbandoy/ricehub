@@ -1,6 +1,7 @@
 const { apiResponse } = require('../api-helpers/v1/message/ResponseController')
 const logger = require('../api-helpers/logger/logger')
 const dataToSnakeCase = require('../api-helpers/lib/data_to_snake_case')
+const { Op } = require('sequelize')
 const {
   SubscriberModel,
   ProfileModel,
@@ -260,6 +261,67 @@ SubscriberController.updateProfile = async (req, res) => {
   }
 }
 
+SubscriberController.updateProfileAndAddress = async (req, res) => {
+  const fields = req.body.payload
+  const id = req.query.subscriber_id
+  logger.info('Entering - update subscriber - profile and address')
+  const transaction = await sequelize.transaction()
+  console.log(fields)
+  try {
+    const subscriber = await SubscriberModel.findOne({
+      where: { id: id },
+      attributes: { exclude: ['username', 'password'] },
+      raw: true,
+    })
+
+    if (!subscriber) throw new Error('Subscriber not found!')
+
+    const updatedProfileDocument = await ProfileModel.update(
+      fields,
+      {
+        where: { accountId: id },
+        raw: true,
+      },
+      { transaction }
+    )
+
+    const updatedAddressDocument = await AddressModel.update(
+      fields,
+      {
+        where: { accountId: id },
+        raw: true,
+      },
+      { transaction }
+    )
+
+    await transaction.commit()
+
+    res.send(
+      dataToSnakeCase(
+        apiResponse({
+          statusCode: 200,
+          message: 'subscriber Profile sucessfully updated!',
+          data: { ...updatedProfileDocument, ...updatedAddressDocument },
+        })
+      )
+    )
+  } catch (error) {
+    logger.info(`Error on - update subscriber - profile - ${error.message}`)
+    await transaction.rollback()
+
+    res.send(
+      dataToSnakeCase(
+        apiResponse({
+          isSuccess: false,
+          statusCode: 200,
+          message: error.message,
+          errors: 'failed',
+        })
+      )
+    )
+  }
+}
+
 SubscriberController.updateAddress = async (req, res) => {
   const updateData = req.body.address
   const id = req.query.subscriber_id
@@ -314,25 +376,34 @@ SubscriberController.updateAddress = async (req, res) => {
 
 SubscriberController.addCart = async (req, res) => {
   logger.info('Entering - add cart items')
-  const { accountId, productId } = req.body
+  const { account_id, product_id, quantity } = req.body
   const transaction = await sequelize.transaction()
   try {
-    const productItem = await ProductModel.findAll({
-      where: { status: 'AVAILABLE' },
+    const productItem = await ProductModel.findOne({
+      where: {
+        [Op.and]: [
+          { status: 'AVAILABLE' },
+          { Id: product_id },
+          { stockQuantity: { [Op.ne]: 0 } },
+        ],
+      },
       raw: true,
     })
 
+    if (!productItem) throw new Error('Item not available')
+
+    console.log(productItem)
     const cartDocuments = new CartModel({
-      accountId: 1,
-      productId: 12,
-      price: productDetails.price,
-      quantity: 2,
+      accountId: account_id,
+      productId: product_id,
+      price: productItem.price,
+      quantity: quantity,
       isForOrder: false,
       status: 'PENDING',
-      name: 'dinorado',
-      weight: 25,
-      unit: 'kg',
-      featuredImage: '',
+      name: productItem.name,
+      weight: productItem.weight,
+      unit: productItem.unit,
+      featuredImage: productItem.featuredImage,
     })
 
     await cartDocuments.save({ transaction })
@@ -349,10 +420,10 @@ SubscriberController.addCart = async (req, res) => {
 
 SubscriberController.getCart = async (req, res) => {
   logger.info('Entering - get cart items')
-  // console.log(req)
+  const id = req.query.subscriber_id
   try {
     const cartItems = await CartModel.findAll({
-      where: { status: 'PENDING' },
+      where: { status: 'PENDING', accountId: id },
       raw: true,
     })
 
@@ -371,13 +442,14 @@ SubscriberController.getCart = async (req, res) => {
 
 SubscriberController.updateCartItemQuantity = async (req, res) => {
   logger.info('Entering - update cart items')
-  console.log(req.body)
+  const id = req.query.subscriber_id
+  
   try {
     const cartItem = await CartModel.findByPk(req.body.id)
     await cartItem.increment('quantity', { by: req.body.quantity })
     logger.info('End - update cart')
     const cartItems = await CartModel.findAll({
-      where: { status: 'PENDING' },
+      where: { status: 'PENDING', accountId: id },
       raw: true,
     })
 
@@ -392,14 +464,14 @@ SubscriberController.updateCartItemQuantity = async (req, res) => {
 
 SubscriberController.updateCartIsForOrder = async (req, res) => {
   logger.info('Entering - update cart isForOrder')
-  console.log(req.body)
+  const id = req.query.subscriber_id
   try {
     const cartItem = await CartModel.findByPk(req.body.id)
     cartItem.isForOrder = req.body.isForOrder
     await cartItem.save()
     logger.info('End - update cart isForOrder')
     const cartItems = await CartModel.findAll({
-      where: { status: 'PENDING' },
+      where: { status: 'PENDING', accountId: id },
       raw: true,
     })
 

@@ -57,4 +57,26 @@ ProductController.getActiveProducts = async (req, res) => {
   }
 }
 
+ProductController.getActiveProductsById = async (req, res) => {
+  logger.info('Entering - get active product by id')
+  const productId = req.params.id
+  try {
+    const productInfo = await ProductModel.findAll({
+      where: { status: 'Available', id: productId },
+      raw: true,
+    })
+    if (!productInfo.length) throw new Error("Product not found")
+    const productData = {
+      productInfo,
+    }
+
+    logger.info('End - get active product by id ')
+    res.send(
+      dataToSnakeCase(apiResponse({ message: 'success', data: productData }))
+    )
+  } catch (error) {
+    res.send(dataToSnakeCase(apiResponse({ isSuccess: false, message: error.message })))
+  }
+}
+
 module.exports = ProductController

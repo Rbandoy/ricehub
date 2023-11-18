@@ -23,7 +23,11 @@ router.put(
 // POST
 router.post('/register', subscription.register(), SubscriberController.register)
 router.post('/addCart', SubscriberController.addCart)
-
+router.post(
+  '/number_verification/:phone',
+  SubscriberController.numberVerification
+)
+router.post('/verify_code/:phone/:code', SubscriberController.verifyCode)
 // UPDATE
 router.patch(
   '/profile/',

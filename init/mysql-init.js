@@ -10,6 +10,7 @@ const ProductModel = require('../models/merchant-model/product-model')
 const logger = require('../api-helpers/logger/logger')
 const CartModel = require('../models/subscriber-model/cart-model')
 const FieldsModel = require('../models/subscriber-model/fields-model')
+const RegistrationVerificationModel = require('../models/registration_verification')
 const DEFAULT_TIMEZONE = '+08:00'
 
 const sequelize = new Sequelize(
@@ -42,6 +43,10 @@ const models = {
   ProductModel: ProductModel.init(sequelize, Sequelize),
   CartModel: CartModel.init(sequelize, Sequelize),
   FieldsModel: FieldsModel.init(sequelize, Sequelize),
+  RegistrationVerificationModel: RegistrationVerificationModel.init(
+    sequelize,
+    Sequelize
+  ),
 }
 
 /** Create relationship in ORM */

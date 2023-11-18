@@ -10,10 +10,12 @@ const {
   CartModel,
   ProductModel,
   sequelize,
+  RegistrationVerificationModel,
 } = require('../init/mysql-init')
 const regcodeWrapper = require('../api-helpers/lib/regcode-generator-wrapper')
 const CustomError = require('../lib/customError')
 const { response } = require('express')
+const smsGateway = require('../api-helpers/sms/sms-gateway')
 
 const SubscriberController = {}
 
@@ -63,6 +65,104 @@ SubscriberController.get = async (req, res) => {
     )
   } catch (error) {
     logger.info(`Error on - get subscriber - ${error.message}`)
+    res.send(
+      dataToSnakeCase(
+        apiResponse({
+          isSuccess: false,
+          statusCode: 200,
+          message: error.message,
+          errors: 'failed',
+        })
+      )
+    )
+  }
+}
+
+SubscriberController.numberVerification = async (req, res) => {
+  logger.info('Entering - send verification subscriber')
+  const phone = req.params.phone
+  const transaction = await sequelize.transaction()
+  try {
+    const verify = await RegistrationVerificationModel.findOne({
+      where: { phone, status: 0 },
+      raw: true,
+    })
+
+    if (verify)
+      throw new Error('Verification code already sent to this number!')
+
+    const sendVerification = await smsGateway.sendOtp(phone)
+
+    if (sendVerification.status != 'Pending') {
+      throw new Error(
+        `Error Sending Verification code ${sendVerification.error}`
+      )
+    }
+
+    const verificationDocuments = new RegistrationVerificationModel({
+      phone,
+      code: sendVerification.code,
+    })
+
+    await verificationDocuments.save({ transaction })
+    await transaction.commit()
+
+    res.send(
+      dataToSnakeCase(
+        apiResponse({
+          statusCode: 200,
+          message: 'sucessful',
+          data: sendVerification.status,
+        })
+      )
+    )
+  } catch (error) {
+    logger.info(`Error on - send verification subscriber - ${error.message}`)
+    res.send(
+      dataToSnakeCase(
+        apiResponse({
+          isSuccess: false,
+          statusCode: 200,
+          message: error.message,
+          errors: 'failed',
+        })
+      )
+    )
+  }
+}
+
+SubscriberController.verifyCode = async (req, res) => {
+  logger.info('Entering - send verification subscriber')
+  const phone = req.params.phone
+  const code = req.params.code
+
+  try {
+    const verify = await RegistrationVerificationModel.findOne({
+      where: { phone, code, status: 0 },
+      raw: true,
+    })
+
+    if (!verify) throw new Error('Invalid Code!')
+
+    await RegistrationVerificationModel.update(
+      { status: 1 },
+      {
+        where: { phone, code },
+        raw: true,
+      }
+    )
+
+    res.send(
+      dataToSnakeCase(
+        apiResponse({
+          statusCode: 200,
+          message: 'sucessful',
+          data: verify,
+        })
+      )
+    )
+  } catch (error) {
+    logger.info(`Error on - send verification subscriber - ${error.message}`)
     res.send(
       dataToSnakeCase(
         apiResponse({

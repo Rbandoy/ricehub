@@ -28,6 +28,7 @@
     "peer": "^1.0.0",
     "sequelize": "^6.32.1",
     "socket.io": "^4.6.1",
+    "speakeasy": "^2.0.0",
     "uuid": "^9.0.0"
   },
   "devDependencies": {

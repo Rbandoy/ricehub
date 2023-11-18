@@ -65,14 +65,14 @@ ProductController.getActiveProductsById = async (req, res) => {
       where: { status: 'Available', id: productId },
       raw: true,
     })
-    if (!productInfo.length) throw new Error("Product not found")
+    if (!productInfo.length) throw new Error('Product not found')
     const productData = {
       productInfo,
       images: [
-        "https://down-ph.img.susercontent.com/file/fe71ab436a7508aa606247d33c9ab83f",
-        "https://down-ph.img.susercontent.com/file/fe71ab436a7508aa606247d33c9ab83f",
-        "https://down-ph.img.susercontent.com/file/fe71ab436a7508aa606247d33c9ab83f",
-        "https://down-ph.img.susercontent.com/file/fe71ab436a7508aa606247d33c9ab83f"
+        'https://down-ph.img.susercontent.com/file/fe71ab436a7508aa606247d33c9ab83f',
+        'https://down-ph.img.susercontent.com/file/fe71ab436a7508aa606247d33c9ab83f',
+        'https://down-ph.img.susercontent.com/file/fe71ab436a7508aa606247d33c9ab83f',
+        'https://down-ph.img.susercontent.com/file/fe71ab436a7508aa606247d33c9ab83f',
       ],
     }
 
@@ -81,7 +81,9 @@ ProductController.getActiveProductsById = async (req, res) => {
       dataToSnakeCase(apiResponse({ message: 'success', data: productData }))
     )
   } catch (error) {
-    res.send(dataToSnakeCase(apiResponse({ isSuccess: false, message: error.message })))
+    res.send(
+      dataToSnakeCase(apiResponse({ isSuccess: false, message: error.message }))
+    )
   }
 }
 
